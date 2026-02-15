@@ -14,9 +14,7 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    public function __construct(private readonly AuthService $authService)
-    {
-    }
+    public function __construct(private readonly AuthService $authService) {}
 
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -31,6 +29,7 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
+
         $result = $this->authService->attemptLogin($request->validated());
 
         if ($result === null) {

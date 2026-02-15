@@ -55,5 +55,15 @@ class RolesAndPermissionsSeeder extends Seeder
             'users.delete',
             'auth.sidebar.view',
         ]);
+
+        Role::firstOrCreate([
+            'name' => 'admin',
+            'guard_name' => 'api',
+        ]);
+
+        Role::firstOrCreate([
+            'name' => 'customer',
+            'guard_name' => 'api',
+        ]);
     }
 }

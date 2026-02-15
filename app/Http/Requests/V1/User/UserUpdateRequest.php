@@ -38,6 +38,7 @@ class UserUpdateRequest extends FormRequest
         return [
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'string', 'email', 'max:255', 'unique:users,email,' . $userId],
+            'address' => ['required', 'string', 'max:255'],
             'mobile_country_code' => ['sometimes', 'nullable', 'string', 'max:10'],
             'mobile_number' => ['sometimes', 'nullable', 'string', 'max:30'],
             'password' => ['nullable', 'string', 'min:8'],

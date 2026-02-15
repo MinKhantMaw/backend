@@ -28,6 +28,7 @@ class UserService
             $payload = Arr::only($data, [
                 'name',
                 'email',
+                'address',
                 'mobile_country_code',
                 'mobile_number',
                 'password',
@@ -52,7 +53,7 @@ class UserService
     public function update(User $user, array $data, ?User $actor = null): User
     {
         return DB::transaction(function () use ($user, $data, $actor): User {
-            $payload = Arr::only($data, ['name', 'email', 'mobile_country_code', 'mobile_number', 'status']);
+            $payload = Arr::only($data, ['name', 'email', 'address', 'mobile_country_code', 'mobile_number', 'status']);
 
             if (!empty($data['password'])) {
                 $payload['password'] = Hash::make($data['password']);

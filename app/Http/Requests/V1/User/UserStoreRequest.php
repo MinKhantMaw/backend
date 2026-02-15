@@ -33,6 +33,7 @@ class UserStoreRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'mobile_country_code' => ['nullable', 'string', 'max:10'],
             'mobile_number' => ['nullable', 'string', 'max:30'],
+            'address' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8'],
             'status' => ['nullable', Rule::in(array_column(UserStatus::cases(), 'value'))],
             'roles' => ['required', 'array', 'min:1'],

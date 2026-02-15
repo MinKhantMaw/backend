@@ -1,6 +1,16 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\Ecommerce\Admin\AdminAnalyticsController;
+use App\Http\Controllers\Api\V1\Ecommerce\Admin\AdminOrderController as EcommerceAdminOrderController;
+use App\Http\Controllers\Api\V1\Ecommerce\Admin\AdminProductController;
+use App\Http\Controllers\Api\V1\Ecommerce\CartController;
+use App\Http\Controllers\Api\V1\Ecommerce\CategoryController as EcommerceCategoryController;
+use App\Http\Controllers\Api\V1\Ecommerce\CheckoutController;
+use App\Http\Controllers\Api\V1\Ecommerce\EcommerceAuthController;
+use App\Http\Controllers\Api\V1\Ecommerce\OrderController as EcommerceOrderController;
+use App\Http\Controllers\Api\V1\Ecommerce\PaymentWebhookController;
+use App\Http\Controllers\Api\V1\Ecommerce\ProductController as EcommerceProductController;
 use App\Http\Controllers\Api\V1\PermissionController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SidebarController;
@@ -45,5 +55,52 @@ Route::prefix('v1')->group(function () {
                 Route::put('permissions/{permission}', [PermissionController::class, 'update'])->middleware('permission:permissions.update');
                 Route::delete('permissions/{permission}', [PermissionController::class, 'destroy'])->middleware('permission:permissions.delete');
             });
+    });
+
+    // eCommerce API
+    Route::post('auth/customer/register', [EcommerceAuthController::class, 'registerCustomer'])->middleware('throttle:auth-ecommerce');
+    Route::post('auth/customer/login', [EcommerceAuthController::class, 'loginCustomer'])->middleware('throttle:auth-ecommerce');
+    Route::post('auth/admin/login', [EcommerceAuthController::class, 'loginAdmin'])->middleware('throttle:auth-ecommerce');
+    Route::post('auth/refresh', [EcommerceAuthController::class, 'refresh'])->middleware('throttle:auth-ecommerce');
+
+    Route::get('products', [EcommerceProductController::class, 'index']);
+    Route::get('products/{slug}', [EcommerceProductController::class, 'show']);
+    Route::get('categories', [EcommerceCategoryController::class, 'index']);
+    Route::post('categories', [EcommerceCategoryController::class, 'store'])
+        ->middleware(['auth:api', 'ensure_role:admin,Super Admin']);
+
+    Route::get('cart', [CartController::class, 'show']);
+    Route::post('cart/items', [CartController::class, 'store']);
+    Route::patch('cart/items/{item}', [CartController::class, 'update']);
+    Route::delete('cart/items/{item}', [CartController::class, 'destroy']);
+
+    Route::post('webhooks/payments/stripe', [PaymentWebhookController::class, 'handleStripe'])
+        ->middleware(['throttle:webhooks', 'verify_webhook_signature']);
+
+    Route::middleware('auth:api')->group(function () {
+        Route::get('auth/customer/profile', [EcommerceAuthController::class, 'profile'])->middleware('ensure_role:customer');
+        Route::put('auth/customer/profile', [EcommerceAuthController::class, 'updateProfile'])->middleware('ensure_role:customer');
+        Route::post('auth/customer/logout', [EcommerceAuthController::class, 'logout']);
+        Route::post('auth/logout-all', [EcommerceAuthController::class, 'logoutAll']);
+        Route::post('cart/merge', [CartController::class, 'mergeGuest']);
+        Route::post('checkout', [CheckoutController::class, 'store'])->middleware(['throttle:checkout', 'ensure_role:customer']);
+        Route::post('orders', [CheckoutController::class, 'store'])->middleware(['throttle:checkout', 'ensure_role:customer']);
+        Route::get('orders', [EcommerceOrderController::class, 'index'])->middleware('ensure_role:customer');
+        Route::get('orders/{order}', [EcommerceOrderController::class, 'show'])->middleware('ensure_role:customer');
+    });
+
+    Route::middleware(['auth:api', 'ensure_role:admin,Super Admin'])->prefix('admin')->group(function () {
+        Route::get('products', [AdminProductController::class, 'index']);
+        Route::post('products', [AdminProductController::class, 'store']);
+        Route::get('products/{product}', [AdminProductController::class, 'show']);
+        Route::put('products/{product}', [AdminProductController::class, 'update']);
+        Route::delete('products/{product}', [AdminProductController::class, 'destroy']);
+        Route::post('products/{product}/images', [AdminProductController::class, 'uploadImage']);
+
+        Route::get('orders', [EcommerceAdminOrderController::class, 'index']);
+        Route::get('orders/{order}', [EcommerceAdminOrderController::class, 'show']);
+        Route::patch('orders/{order}/status', [EcommerceAdminOrderController::class, 'updateStatus']);
+
+        Route::get('analytics/overview', [AdminAnalyticsController::class, 'overview']);
     });
 });
