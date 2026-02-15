@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\EloquentUserRepository;
+use App\Swagger\GeneratorFactory as SwaggerGeneratorFactory;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -17,6 +18,9 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);
+        $this->app->singleton(\L5Swagger\GeneratorFactory::class, function ($app) {
+            return new SwaggerGeneratorFactory($app->make(\L5Swagger\ConfigFactory::class));
+        });
     }
 
     /**

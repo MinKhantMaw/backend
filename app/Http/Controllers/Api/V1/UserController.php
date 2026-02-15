@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use OpenApi\Annotations as OA;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\User\UserAssignRolesRequest;
 use App\Http\Requests\V1\User\UserIndexRequest;
@@ -15,9 +16,19 @@ use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
-    public function __construct(private readonly UserService $userService)
-    {
-    }
+    public function __construct(private readonly UserService $userService) {}
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/users",
+     *     summary="Get all users",
+     *     tags={"Users"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success"
+     *     )
+     * )
+     */
 
     public function index(UserIndexRequest $request): JsonResponse
     {
